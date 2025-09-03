@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
-import { add } from "../feature/slices/postSlice";
-
+import { useAddPostMutation } from "../feature/api/postsApi";
 export default function PostForm() {
   const [formData, setFormData] = useState({
     title: "",
@@ -9,19 +8,46 @@ export default function PostForm() {
     tags: [],
   });
   const dispatch = useDispatch();
+  const [addPost] = useAddPostMutation();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  async function handleSubmit(e) {
+    e.preventDefault();
+
+    function reactionGen(type) {
+      if (type == "likes") {
+        return Math.floor(Math.random() * 500) + 1;
+      } else {
+        return Math.floor(Math.random() * 5) + 1;
+      }
+    }
+    function tagsGen(str) {
+      return str.split(" ");
+    }
+    function idGen() {
+      return crypto.randomUUID();
+    }
+
+    const newObj = {
+      id: idGen(),
+      title: formData.title,
+      body: formData.body,
+      reactions: {
+        likes: reactionGen("likes"),
+        dislikes: reactionGen("dislikes"),
+      },
+      tags: tagsGen(formData.tags),
+    };
+    await addPost(newObj);
+  }
+
   return (
     <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        console.log(formData);
-        dispatch(add(formData));
-      }}
+      onSubmit={handleSubmit}
       className=" p-4 rounded-2xl shadow-xl w-full max-w-md space-y-4 border border-neutral-700 mx-auto my-5"
     >
       <div className="flex  gap-3">

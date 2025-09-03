@@ -1,8 +1,18 @@
-import { useDispatch } from "react-redux";
-import { dislike, like, remove } from "../feature/slices/postSlice";
+import {
+  useRemovePostMutation,
+  useUpdatePostMutation,
+} from "../feature/api/postsApi";
 
 export default function Post({ data }) {
-  const dispatch = useDispatch();
+  const [removePost] = useRemovePostMutation();
+  const [updatePost] = useUpdatePostMutation();
+  async function handleReactions(type) {
+    const reactions = {
+      ...data.reactions,
+      [type]: data.reactions[type] + 1,
+    };
+    await updatePost({ id: data?.id, reactions });
+  }
   return (
     <div className="w-[90dvw] border border-neutral-600 rounded-xl h-max min-h-[20dvh] flex flex-col justify-between p-5">
       <div className="upper ">
@@ -14,19 +24,19 @@ export default function Post({ data }) {
       </div>
       <div className="lower flex justify-evenly items-center">
         <span
-          onClick={() => dispatch(like(data?.id))}
+          onClick={() => handleReactions("likes")}
           className="border border-neutral-600 w-1/3 py-2 text-center bg-neutral-800"
         >
           likes : {data?.reactions?.likes || 0}
         </span>
         <span
-          onClick={() => dispatch(dislike(data?.id))}
+          onClick={() => handleReactions("dislikes")}
           className="border border-neutral-600 w-1/3 py-2 text-center bg-neutral-800"
         >
           dislikes : {data?.reactions?.dislikes || 0}
         </span>
         <span
-          onClick={() => dispatch(remove(data?.id))}
+          onClick={() => removePost(data?.id)}
           className="border border-neutral-600 w-1/3 py-2 text-center bg-neutral-800"
         >
           remove
